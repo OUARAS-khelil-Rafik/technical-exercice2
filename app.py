@@ -14,7 +14,10 @@ app = FastAPI(title="AI Text Summarizer Interview")
 # Initialize the Ollama language model using llama3.2:3b
 # and configure the temperature .
 
-llm = None
+llm = ChatOllama(
+    model="llama3.2:3b",
+    temperature=0
+)
 
 
 class SummaryRequest(BaseModel):
@@ -32,11 +35,22 @@ def summarize(data: SummaryRequest):
         raise HTTPException(status_code=400, detail="Text cannot be empty")
 
     # TODO 1: Create a prompt asking the AI to summarize data.text
-    prompt = None
+    prompt = f"""
+    You are a professional text summarizer.
+    
+    Summarize the following text in 1 or 2 sentences.
+    Keep only the most important information.
+    Don not add any information that is not the original text.
+    
+    Text:
+    {data.text}
+    """
+    
 
     # TODO 2: Send the prompt to Ollama 
     # Extract the generated text from the response.
-    summary = None
+    response = llm.invoke(prompt)
+    summary = response.content
 
     if summary is None:
         raise HTTPException(
@@ -45,7 +59,9 @@ def summarize(data: SummaryRequest):
         )
 
     # TODO 3: Return the summary as JSON
-    return None
+    return {
+        "summary": summary
+    }
 
 
 # Keep the frontend mount after the API routes.
